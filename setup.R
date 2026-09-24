@@ -1,3 +1,6 @@
 #!/usr/bin/env Rscript
-packages <- c("dplyr", "ggmap", "gmapsdistance", "leaflet", "rvest", "sqldf", "zoo")
-install.packages(packages[!packages %in% installed.packages()[,"Package"]])
+packages <- c(
+  "tidymodels", "xgboost", "rpart.plot", "vip",
+  "naniar", "stringr", "lubridate", "corrplot"
+)
+install.packages(packages[!packages %in% installed.packages()[, "Package"]])
