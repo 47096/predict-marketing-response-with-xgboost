@@ -1,27 +1,73 @@
 # Who will accept the next offer?
 
-**Case study — customer analytics · marketing response · XGBoost**
+**A marketing budget problem, solved with customer data.**
 
-Marketing teams waste budget contacting customers who will never convert. I built a classifier that flags likely responders **before** the next campaign goes out — so spend goes to the people who say yes.
-
-**Business question:** Of 2,240 customers, who will accept the offer?
-
-**Outcome:** The model catches **95.5% of actual responders**. When it flags someone as likely to convert, it is right **9 times out of 10**. That is a targeting list a marketing lead can use on Monday morning.
+You already know the pain: the campaign goes out to everyone, most people ignore it, and you cannot tell which half of the budget worked. I help marketing teams stop paying to contact people who will never say yes — and start the week with a **ranked list of who will**.
 
 ---
 
-## What I did
+## The stake
 
-| Step | Why it matters |
-|------|----------------|
-| Explored messy real data | Income arrived as strings (`"$84,835.00 "`), not numbers |
-| Engineered decision-useful features | Tenure, age, child count — not just raw columns |
-| Handled severe class imbalance | Only **15%** accepted; blind accuracy would look fine and fail in market |
-| Trained XGBoost (tidymodels) | Strong tabular baseline without over-engineering |
-| Evaluated for **recall + precision** | The job is finding responders without flooding non-responders |
+Every send has a cost — discount, channel fee, brand fatigue, team time. If only **15%** of customers accept an offer, untargeted outreach means **~85% of that spend buys silence**. The fix is not “more data.” It is **knowing who is actually in play**.
 
-## Results
+## The story
 
+A team has 2,240 customers and one question: *who should get the next offer?*
+
+They have demographics, spend, channel behaviour, and past campaign history. No clean model. No shared view of “likely to accept.”
+
+I took that from messy warehouse tables to a **targeting list a marketing lead can act on** — without waiting for a six-month data platform.
+
+**Outcome on this build:**
+- Model finds **95.5% of the customers who would accept**
+- When it flags someone, it is right **~9 times out of 10**
+- A marketing lead can call / email **the top of the list first** and stop wasting touches
+
+> **The commercial idea:** contact fewer people, convert more of them. Same offer. Better list.
+
+---
+
+## What that looks like in your world
+
+This is the same playbook I run with marketing, CRM, and growth teams:
+
+| You have | I turn it into |
+|----------|----------------|
+| Campaign history and customer tables | A **score** per customer (“likely to accept”) |
+| A budget and a send date | A **ranked list** sized to your budget |
+| “Half the spend feels wasted” | A clear **suppress vs pursue** rule |
+| Dashboard noise | A decision: **who gets the offer on Monday** |
+
+**Typical engagement shape:** we define one campaign job (response, churn, upsell) → I build on your data → you leave with a list, the rules to run it, and a way to measure lift next quarter.
+
+**[Talk to me about a campaign →](https://datafying.co/#contactus)** · [datafying](https://datafying.co/)
+
+---
+
+## Why marketing leaders bring me in
+
+- I speak **offer, list, and budget** — not only AUC and gradients
+- I size the model to the decision (no science project)
+- I show the **trade-off you are choosing** (miss some responders vs waste touches) so you own the call
+- Technical work is reproducible and handed over — not locked in a black box
+
+---
+
+## Proof of craft *(technical — keep us honest)*
+
+### Business question
+Of 2,240 customers (28 features), who will accept the offer (`Response = 1`)?
+
+### What I did
+| Step | Why it matters commercially |
+|------|-----------------------------|
+| Explored messy real data | Income arrived as `"$84,835.00 "` — dirty fields kill trust in the list |
+| Engineered decision-useful features | Tenure, age, household — signals a marketer can explain to a stakeholder |
+| Handled class imbalance | Only **15%** accepted; naive accuracy would look fine and fail in market |
+| Trained XGBoost (tidymodels) | Strong tabular baseline — fast enough for campaign cycles |
+| Evaluated **recall + precision** | The job is finding responders without flooding non-responders |
+
+### Results
 | Metric | Score | Read this as |
 |--------|-------|----------------|
 | **Recall** | **0.955** | We find almost everyone who would accept |
@@ -38,27 +84,36 @@ Marketing teams waste budget contacting customers who will never convert. I buil
 | Predicted 0 | 365 (TN) | 33 (FN) |
 | Predicted 1 | 17 (FP) | 34 (TP) |
 
-**So what:** Contact the predicted-1 list first. Expect ~34 of 51 flagged customers to accept, and only 17 wasted touches. Miss 33 who would have accepted if you emailed everyone — that is the trade-off you choose on purpose.
+**So what for the budget holder:** Contact predicted-1 first. On this holdout: **~34 of 51** flagged would accept; **17** wasted touches; **33** responders only found if you also contact everyone else. You choose the cut-off by campaign budget — I make that trade-off visible.
 
-## What this means for retention & campaign budget
+### Behavioural signals that moved the needle
+- **Past campaign acceptance** is the strongest predictor — suppress chronic non-responders
+- **Household + tenure** add lift over spend-only views
+- **Top-of-list precision is the lever** — you need the right names, not every name
 
-- **Past campaign acceptance** is the strongest behavioural signal — suppress chronic non-responders and stop paying to reach them.
-- **Household and tenure features add lift** over spend-only models — demographics alone are not enough.
-- **Precision at the top of the list is the lever.** You do not need everyone; you need the names most likely to say yes.
+### Example (what the list is for)
+| Customer | Score | Why they are on the list |
+|----------|-------|---------------------------|
+| #1842 | 0.91 | Accepted previous offer · high tenure · active buyer |
+| #2201 | 0.84 | Recent spend · opened past campaigns |
+| #1904 | 0.79 | Mid-tenure · category match for this offer |
 
-## Who this is for
+*(Illustrative pattern — real exports run at your list size.)*
 
-Marketing, CRM, and growth leads who want a **ranked call list**, not another dashboard.
+### How this ships into a campaign
+1. Score all customers (batch, on a schedule or pre-campaign)
+2. Export **ranked CSV** to your ESP / CRM (Braze, Salesforce, HubSpot, …)
+3. Suppress bottom scores; size the send to budget
+4. Keep a **holdout** so next quarter you can prove lift, not just assert it
 
-## Work with me
-
-I help businesses turn customer data into targeting and retention decisions — same method on your data.
-
-**[Talk to me →](https://datafying.co/#contactus)** · Founder at [datafying](https://datafying.co/)
+### Limits (honesty)
+- Cold-start customers need rules until they generate history
+- Scores drift as behaviour changes — retrain on a campaign cadence
+- Use only data you have consent and a lawful basis to use
 
 ---
 
-## Reproduce
+## Reproduce the build
 
 ```bash
 git clone https://github.com/47096/campaign-response.git
@@ -70,20 +125,16 @@ source("setup.R")     # installs dependencies
 source("analysis.R")  # full pipeline
 ```
 
-### Data
+**Data:** [Marketing Analytics on Kaggle](https://www.kaggle.com/jackdaoud/marketing-data) — 2,240 customers, 28 features. Target: `Response`.
 
-[Marketing Analytics on Kaggle](https://www.kaggle.com/jackdaoud/marketing-data) — 2,240 customers, 28 features (demographics, household, spend by category, channel purchases, past campaigns).
+**Method in one line:** Explore → clean Income/tenure/age → stratified 80/20 split → XGBoost via tidymodels → precision/recall/F1/AUC + confusion matrix.
 
-Target: `Response` (accepted the offer).
-
-### Method in one line
-
-Explore → clean Income/tenure/age → stratified 80/20 split → XGBoost via tidymodels → confusion matrix, precision/recall/F1/AUC.
-
-### Stack
-
-`tidymodels` · `xgboost` · `vip` · `naniar` · `corrplot` · `lubridate` · `stringr`
+**Stack:** `tidymodels` · `xgboost` · `vip` · `naniar` · `corrplot` · `lubridate` · `stringr`
 
 ---
 
-*Part of [datafying](https://datafying.co/) customer analytics work — [more case studies on GitHub](https://github.com/47096?tab=repositories).*
+## Next step
+
+If you have a campaign in the next 30 days and cannot say who should get it, that is exactly the engagement I do.
+
+**[Book a conversation →](https://datafying.co/#contactus)** · Customer analytics for marketing teams · [datafying](https://datafying.co/)
