@@ -61,8 +61,8 @@ I help businesses turn customer data into targeting and retention decisions — 
 ## Reproduce
 
 ```bash
-git clone https://github.com/47096/predict-marketing-response-with-xgboost.git
-cd predict-marketing-response-with-xgboost
+git clone https://github.com/47096/campaign-response.git
+cd campaign-response
 ```
 
 ```r
